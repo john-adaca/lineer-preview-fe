@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Topics Generator - Streaming</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+    }
+
+    .form-section {
+      padding: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      padding: 20px 30px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #e0e0e0;
+      display: none;
+    }
+
+    .status.active {
+      display: block;
+    }
+
+    .status-message {
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-message .loading {
+      flex-shrink: 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .results {
+      padding: 30px;
+    }
+
+    .topic-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 2px solid #e0e0e0;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+
+    .topic-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .topic-card.complete {
+      border-color: #4caf50;
+    }
+
+    .topic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .topic-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .topic-badge {
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .post-preview {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid #667eea;
+    }
+
+    .post-author {
+      font-size: 0.875rem;
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .post-text {
+      color: #666;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-bottom: 12px;
+    }
+
+    .post-link {
+      display: inline-block;
+      color: #667eea;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-top: 8px;
+      transition: color 0.2s;
+    }
+
+    .post-link:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    .perspectives {
+      margin-top: 16px;
+    }
+
+    .perspectives-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    .perspective-item {
+      background: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid #764ba2;
+      animation: slideIn 0.3s ease-out;
+      line-height: 1.6;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: auto;
+    }
+
+    .perspective-item:hover {
+      background: #f5f5f5;
+      border-left-width: 4px;
+      transform: translateX(4px);
+    }
+
+    .perspective-item.generating-email {
+      border-left-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .perspective-item.has-email {
+      border-left-color: #4caf50;
+    }
+
+    .perspective-item.loading-perspective {
+      color: #999;
+      font-style: italic;
+      border-left-color: #e0e0e0;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .perspective-item.error-perspective {
+      color: #c62828;
+      border-left-color: #c62828;
+      background: #ffebee;
+    }
+
+    .perspective-item strong {
+      color: #764ba2;
+      margin-right: 4px;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 30px;
+      border-left: 4px solid #c62828;
+      animation: slideIn 0.3s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .error::before {
+      content: '⚠️';
+      font-size: 1.2rem;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(102, 126, 234, 0.3);
+      border-radius: 50%;
+      border-top-color: #667eea;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 30px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .email-draft {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 16px;
+      border: 2px solid #667eea;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .email-draft-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .email-draft-title {
+      font-weight: 700;
+      color: #667eea;
+      font-size: 1.1rem;
+    }
+
+    .email-draft-content {
+      color: #333;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.95rem;
+    }
+
+    .email-draft-content.streaming {
+      opacity: 0.7;
+    }
+
+    .email-draft-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .email-draft-actions button {
+      padding: 8px 16px;
+      font-size: 0.875rem;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .email-draft-actions button:hover {
+      background: #5568d3;
+    }
+
+    .email-draft-actions button.secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .email-draft-actions button.secondary:hover {
+      background: #d0d0d0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 LinkedIn Topics Generator</h1>
+      <p>Generate topics and perspectives from LinkedIn posts with real-time streaming</p>
+    </div>
+
+    <div class="form-section">
+      <div class="form-group">
+        <label for="profileUrl">LinkedIn Profile URL</label>
+        <input 
+          type="text" 
+          id="profileUrl" 
+          placeholder="https://www.linkedin.com/in/username"
+          value="https://www.linkedin.com/in/lambrosphotios"
+        >
+      </div>
+      <div class="form-group" style="display:none;">
+        <label for="limit">Number of Posts to Fetch</label>
+        <input 
+          type="number" 
+          id="limit" 
+          value="1" 
+          min="1" 
+          max="50"
+        >
+      </div>
+      <button id="generateBtn" onclick="startGeneration()">Generate Topics</button>
+    </div>
+
+    <div class="status" id="statusSection">
+      <div class="status-message" id="statusMessage">Connecting...</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="results" id="results">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <p>Enter a LinkedIn profile URL and click "Generate Topics" to get started</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let eventSource = null;
+    let currentTopics = {};
+    let totalPosts = 0;
+    let reconnectAttempts = 0;
+    let maxReconnectAttempts = 3;
+    let reconnectDelay = 2000;
+    let reconnectTimer = null;
+    let isManuallyClosed = false;
+
+    function startGeneration() {
+      const profileUrl = document.getElementById('profileUrl').value.trim();
+      const limit = parseInt(document.getElementById('limit').value, 10);
+
+      if (!profileUrl) {
+        alert('Please enter a LinkedIn profile URL');
+        return;
+      }
+
+      // Reset state
+      document.getElementById('results').innerHTML = '';
+      currentTopics = {};
+      totalPosts = 0;
+      reconnectAttempts = 0;
+      isManuallyClosed = false;
+      
+      // Clear any existing reconnect timer
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      
+      // Disable button
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      // Show status
+      const statusSection = document.getElementById('statusSection');
+      statusSection.classList.add('active');
+      updateStatus('Connecting to server...', 0);
+
+      // Close existing connection if any
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
+
+      // Create SSE connection
+      connectSSE(profileUrl, limit);
+    }
+
+    function connectSSE(profileUrl, limit) {
+      const baseUrl ="http://localhost:8787";
+      const url = `${baseUrl}/api/linkedin/topics/stream?profileUrl=${encodeURIComponent(profileUrl)}&limit=${limit}`;
+      
+      eventSource = new EventSource(url);
+
+      eventSource.onopen = () => {
+        console.log('[Frontend] SSE connection opened');
+        reconnectAttempts = 0; // Reset on successful connection
+        updateStatus('Connected! Starting...', 0);
+      };
+
+      eventSource.addEventListener('status', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          console.log('[Frontend] Status update:', data.message, 'Step:', data.step);
+          updateStatus(data.message, data.step || 0);
+        } catch (error) {
+          console.error('[Frontend] Error parsing status event:', error);
+        }
+      });
+
+      eventSource.addEventListener('posts', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          totalPosts = data.count;
+          updateStatus(`Found ${data.count} posts`, 1);
+        } catch (error) {
+          console.error('[Frontend] Error parsing posts event:', error);
+        }
+      });
+
+      eventSource.addEventListener('selected', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          updateStatus(`Selected ${data.count} diverse posts for analysis`, 2);
+        } catch (error) {
+          console.error('[Frontend] Error parsing selected event:', error);
+        }
+      });
+
+      eventSource.addEventListener('progress', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          const progress = (data.current / data.total) * 100;
+          updateStatus(data.message, 3, progress);
+        } catch (error) {
+          console.error('[Frontend] Error parsing progress event:', error);
+        }
+      });
+
+      eventSource.addEventListener('topic', (e) => {
+        try {
+          console.log('[Frontend] Received topic event:', e.type, e.data);
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          console.log('[Frontend] Parsed topic data:', {
+            postId: data.postId,
+            topic: data.topic,
+            postIndex: data.postIndex,
+            hasPostText: !!data.postText,
+            postTextLength: data.postText?.length || 0,
+            hasPostUrl: !!data.postUrl,
+            hasAuthor: !!data.author,
+          });
+          createTopicCard(data.postId, data.topic, data.postIndex, data.postText, data.postUrl, data.author);
+          updateStatus(`Topic extracted: ${data.topic}`, 3);
+        } catch (error) {
+          console.error('[Frontend] Error parsing topic event:', error, 'Raw data:', e.data);
+        }
+      });
+
+      eventSource.addEventListener('perspectives', (e) => {
+        try {
+          console.log('[Frontend] Received perspectives event:', e.type, e.data);
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          console.log('[Frontend] Parsed perspectives data:', {
+            postId: data.postId,
+            topic: data.topic,
+            perspectivesCount: data.perspectives?.length || 0,
+            perspectives: data.perspectives,
+            isArray: Array.isArray(data.perspectives),
+          });
+          updatePerspectives(data.postId, data.perspectives, data.topic);
+          // Store topic in currentTopics for email generation
+          if (currentTopics[data.postId]) {
+            currentTopics[data.postId].topic = data.topic;
+          }
+          updateStatus(`Generated ${data.perspectives?.length || 0} perspectives for: ${data.topic}`, 3);
+        } catch (error) {
+          console.error('[Frontend] Error parsing perspectives event:', error, 'Raw data:', e.data);
+        }
+      });
+
+      eventSource.addEventListener('complete', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          markTopicComplete(data.postId);
+        } catch (error) {
+          console.error('[Frontend] Error parsing complete event:', error);
+        }
+      });
+
+      eventSource.addEventListener('keepalive', (e) => {
+        // Silently handle keepalive events to maintain connection
+        // No UI update needed
+      });
+
+      eventSource.addEventListener('done', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          updateStatus('✅ All done!', 4, 100, false); // false = no loading spinner
+          const btn = document.getElementById('generateBtn');
+          btn.disabled = false;
+          btn.textContent = 'Generate Topics';
+          isManuallyClosed = true;
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+        } catch (error) {
+          console.error('[Frontend] Error parsing done event:', error);
+        }
+      });
+
+      eventSource.addEventListener('error', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed; // Handle both wrapped and unwrapped formats
+          const errorMessage = data.message || data.error || 'An error occurred';
+          showError(errorMessage, data.postId);
+          
+          // Don't close connection on individual post errors, continue processing
+          if (data.postId) {
+            // This is a post-specific error, continue
+            return;
+          }
+          
+          // This is a general error, close connection
+          const btn = document.getElementById('generateBtn');
+          btn.disabled = false;
+          btn.textContent = 'Generate Topics';
+          isManuallyClosed = true;
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+        } catch (error) {
+          console.error('[Frontend] Error parsing error event:', error);
+        }
+      });
+
+      eventSource.onerror = (error) => {
+        console.error('SSE connection error:', error);
+        
+        // Don't try to reconnect if manually closed or if done
+        if (isManuallyClosed) {
+          return;
+        }
+
+        // Close the connection
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
+
+        // Try to reconnect
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          updateStatus(`Connection lost. Reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`, 0);
+          
+          reconnectTimer = setTimeout(() => {
+            connectSSE(profileUrl, limit);
+          }, reconnectDelay * reconnectAttempts); // Exponential backoff
+        } else {
+          // Max reconnection attempts reached
+          showError('Connection failed after multiple attempts. Please try again.');
+          const btn = document.getElementById('generateBtn');
+          btn.disabled = false;
+          btn.textContent = 'Generate Topics';
+        }
+      };
+    }
+
+    function updateStatus(message, step, progress = null, showLoading = true) {
+      const statusMessage = document.getElementById('statusMessage');
+      if (showLoading) {
+        statusMessage.innerHTML = `<span class="loading"></span>${escapeHtml(message)}`;
+      } else {
+        statusMessage.innerHTML = escapeHtml(message);
+      }
+      
+      if (progress !== null) {
+        document.getElementById('progressFill').style.width = `${Math.min(100, Math.max(0, progress))}%`;
+      } else if (step > 0) {
+        const stepProgress = ((step - 1) / 4) * 100;
+        document.getElementById('progressFill').style.width = `${Math.min(100, Math.max(0, stepProgress))}%`;
+      }
+    }
+
+    function createTopicCard(postId, topic, postIndex, postText, postUrl, author) {
+      console.log('[Frontend] createTopicCard called:', {
+        postId,
+        topic,
+        postIndex,
+        hasPostText: !!postText,
+        postTextLength: postText?.length || 0,
+        postTextPreview: postText?.substring(0, 50) || 'NO TEXT',
+        hasPostUrl: !!postUrl,
+        hasAuthor: !!author,
+        cardExists: !!currentTopics[postId],
+      });
+      
+      if (currentTopics[postId]) {
+        console.log('[Frontend] Card already exists, updating post content');
+        // Update existing card with post content if not already set
+        const existingCard = document.getElementById(`topic-${postId}`);
+        if (existingCard && postText) {
+          const postPreview = existingCard.querySelector('.post-preview .post-text');
+          if (postPreview && postPreview.textContent === 'Loading post content...') {
+            console.log('[Frontend] Updating post content in existing card');
+            updatePostContent(postId, postText, postUrl, author);
+          }
+        }
+        return; // Card already exists
+      }
+
+      const results = document.getElementById('results');
+      
+      // Remove empty state if present
+      const emptyState = results.querySelector('.empty-state');
+      if (emptyState) {
+        emptyState.remove();
+      }
+
+      const card = document.createElement('div');
+      card.className = 'topic-card';
+      card.id = `topic-${postId}`;
+      
+      // Format post text for display (truncate if too long)
+      const displayText = postText ? (postText.length > 300 ? postText.substring(0, 300) + '...' : postText) : 'Loading post content...';
+      const authorName = author?.name || 'Unknown';
+      
+      console.log('[Frontend] Creating card HTML with:', {
+        hasPostText: !!postText,
+        displayTextLength: displayText.length,
+        authorName,
+        hasPostUrl: !!postUrl,
+      });
+      
+      card.innerHTML = `
+        <div class="topic-header">
+          <div class="topic-title">${escapeHtml(topic)}</div>
+          <div class="topic-badge">Post ${postIndex + 1}</div>
+        </div>
+        <div class="post-preview">
+          ${author?.name ? `<div class="post-author">By ${escapeHtml(authorName)}</div>` : ''}
+          <div class="post-text">${escapeHtml(displayText)}</div>
+          ${postUrl ? `<a href="${escapeHtml(postUrl)}" target="_blank" class="post-link">View on LinkedIn →</a>` : ''}
+        </div>
+        <div class="perspectives">
+          <div class="perspectives-title">💭 Perspectives:</div>
+          <div id="perspectives-${postId}" class="perspectives-container" data-post-id="${postId}">
+            <div class="perspective-item loading-perspective">Generating perspectives...</div>
+          </div>
+        </div>
+      `;
+
+      results.appendChild(card);
+      currentTopics[postId] = { topic, perspectives: [], postText, postUrl, author };
+      console.log('[Frontend] Card created and added to DOM');
+    }
+
+    function updatePostContent(postId, postText, postUrl, author) {
+      const card = document.getElementById(`topic-${postId}`);
+      if (!card) return;
+
+      const postPreview = card.querySelector('.post-preview');
+      if (!postPreview) return;
+
+      const displayText = postText.length > 300 ? postText.substring(0, 300) + '...' : postText;
+      const authorName = author?.name || 'Unknown';
+      
+      postPreview.innerHTML = `
+        ${author?.name ? `<div class="post-author">By ${escapeHtml(authorName)}</div>` : ''}
+        <div class="post-text">${escapeHtml(displayText)}</div>
+        ${postUrl ? `<a href="${escapeHtml(postUrl)}" target="_blank" class="post-link">View on LinkedIn →</a>` : ''}
+      `;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function updatePerspectives(postId, perspectives) {
+      console.log('[Frontend] updatePerspectives called:', {
+        postId,
+        perspectivesCount: perspectives?.length || 0,
+        perspectives: perspectives,
+        isArray: Array.isArray(perspectives),
+        containerExists: !!document.getElementById(`perspectives-${postId}`),
+      });
+      
+      const container = document.getElementById(`perspectives-${postId}`);
+      if (!container) {
+        console.error('[Frontend] Perspectives container not found for postId:', postId);
+        return;
+      }
+
+      if (!perspectives || perspectives.length === 0) {
+        console.warn('[Frontend] No perspectives provided, showing error message');
+        container.innerHTML = '<div class="perspective-item error-perspective">No perspectives generated</div>';
+        return;
+      }
+
+      if (!Array.isArray(perspectives)) {
+        console.error('[Frontend] Perspectives is not an array:', typeof perspectives, perspectives);
+        container.innerHTML = '<div class="perspective-item error-perspective">Invalid perspectives data</div>';
+        return;
+      }
+
+      // Use event delegation on the container for more reliable click handling
+      // Store listener flag in a way that survives innerHTML clearing
+      if (!container.hasAttribute('data-listener-attached')) {
+        const clickHandler = function(e) {
+          const perspectiveItem = e.target?.closest('.perspective-item:not(.loading-perspective)');
+          if (!perspectiveItem) return;
+          
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const containerPostId = container.getAttribute('data-post-id') || postId;
+          const perspectiveIndex = parseInt(perspectiveItem.getAttribute('data-perspective-index') || '-1', 10);
+          const perspectiveText = perspectiveItem.textContent?.replace(/^\d+\.\s*/, '').trim() || '';
+          
+          console.log('[Frontend] Perspective clicked (delegated):', { 
+            containerPostId, 
+            perspectiveIndex, 
+            perspectiveText,
+            element: perspectiveItem 
+          });
+          
+          if (perspectiveIndex >= 0 && perspectiveText) {
+            try {
+              generateEmailForPerspective(containerPostId, perspectiveText, perspectiveIndex);
+            } catch (error) {
+              console.error('[Frontend] Error in generateEmailForPerspective:', error);
+              alert('Error generating email: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            }
+          }
+        };
+        
+        container.addEventListener('click', clickHandler);
+        // Store reference to prevent garbage collection
+        container._clickHandler = clickHandler;
+        container.setAttribute('data-listener-attached', 'true');
+      }
+
+      // Preserve the listener attribute when clearing
+      const hasListener = container.hasAttribute('data-listener-attached');
+      container.innerHTML = '';
+      if (hasListener) {
+        container.setAttribute('data-listener-attached', 'true');
+      }
+      perspectives.forEach((perspective, index) => {
+        const item = document.createElement('div');
+        item.className = 'perspective-item';
+        item.style.animationDelay = `${index * 0.1}s`;
+        item.innerHTML = `<strong>${index + 1}.</strong> ${escapeHtml(perspective)}`;
+        
+        // Add data attributes for event delegation
+        item.setAttribute('data-post-id', postId);
+        item.setAttribute('data-perspective-index', index.toString());
+        item.title = 'Click to generate email draft';
+        
+        container.appendChild(item);
+      });
+
+      if (currentTopics[postId]) {
+        currentTopics[postId].perspectives = perspectives;
+      }
+      
+      console.log('[Frontend] Perspectives updated successfully');
+    }
+
+    function generateEmailForPerspective(postId, perspective, perspectiveIndex) {
+      console.log('[Frontend] generateEmailForPerspective called:', { postId, perspective, perspectiveIndex });
+      const topicData = currentTopics[postId];
+      if (!topicData) {
+        console.error('[Frontend] Topic data not found for postId:', postId, 'Available topics:', Object.keys(currentTopics));
+        return;
+      }
+
+      // Find the perspective item using getElementById (avoids CSS selector issues with special chars)
+      const perspectivesContainer = document.getElementById(`perspectives-${postId}`);
+      if (!perspectivesContainer) {
+        console.error('[Frontend] Perspectives container not found for postId:', postId);
+        return;
+      }
+      
+      const perspectiveItems = perspectivesContainer.querySelectorAll('.perspective-item');
+      const perspectiveItem = perspectiveItems[perspectiveIndex];
+      if (!perspectiveItem) {
+        console.error('[Frontend] Perspective item not found at index:', perspectiveIndex, 'Total items:', perspectiveItems.length);
+        return;
+      }
+
+      // Check if email already exists
+      const existingEmail = perspectiveItem.querySelector('.email-draft');
+      if (existingEmail) {
+        // Toggle email visibility
+        existingEmail.style.display = existingEmail.style.display === 'none' ? 'block' : 'none';
+        return;
+      }
+
+      // Mark as generating
+      perspectiveItem.classList.add('generating-email');
+      perspectiveItem.style.cursor = 'wait';
+
+      // Create email draft container
+      const emailDraft = document.createElement('div');
+      emailDraft.className = 'email-draft';
+      emailDraft.innerHTML = `
+        <div class="email-draft-header">
+          <div class="email-draft-title">📧 Generating Email Draft...</div>
+        </div>
+        <div class="email-draft-content streaming" id="email-content-${postId}-${perspectiveIndex}"></div>
+      `;
+      perspectiveItem.appendChild(emailDraft);
+
+      const emailContent = document.getElementById(`email-content-${postId}-${perspectiveIndex}`);
+      const baseUrl = "http://localhost:8787";
+      
+      // Build URL with query parameters
+      const params = new URLSearchParams({
+        postId: postId,
+        postText: topicData.postText || '',
+        topic: topicData.topic || '',
+        perspective: perspective,
+      });
+
+      if (topicData.postUrl) {
+        params.append('postUrl', topicData.postUrl);
+      }
+
+      if (topicData.author?.name) {
+        params.append('authorName', topicData.author.name);
+      }
+
+      if (topicData.author?.url) {
+        params.append('authorUrl', topicData.author.url);
+      }
+
+      const url = `${baseUrl}/api/email/draft/linkedin/stream?${params.toString()}`;
+      
+      const emailEventSource = new EventSource(url);
+
+      emailEventSource.addEventListener('status', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed;
+          if (emailContent) {
+            emailContent.textContent = data.message || 'Generating...';
+          }
+        } catch (error) {
+          console.error('[Frontend] Error parsing email status:', error);
+        }
+      });
+
+      emailEventSource.addEventListener('email_chunk', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed;
+          if (emailContent) {
+            emailContent.textContent += data.chunk || '';
+            emailContent.classList.remove('streaming');
+            // Scroll to bottom
+            emailContent.scrollTop = emailContent.scrollHeight;
+          }
+        } catch (error) {
+          console.error('[Frontend] Error parsing email chunk:', error);
+        }
+      });
+
+      emailEventSource.addEventListener('email_complete', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed;
+          if (emailContent) {
+            emailContent.textContent = data.email || emailContent.textContent;
+            emailContent.classList.remove('streaming');
+          }
+
+          // Add action buttons
+          const actions = document.createElement('div');
+          actions.className = 'email-draft-actions';
+          actions.innerHTML = `
+            <button onclick="copyEmailToClipboard('${postId}', ${perspectiveIndex})">📋 Copy Email</button>
+            <button class="secondary" onclick="this.parentElement.parentElement.style.display='none'">✕ Close</button>
+          `;
+          emailDraft.appendChild(actions);
+
+          perspectiveItem.classList.remove('generating-email');
+          perspectiveItem.classList.add('has-email');
+          perspectiveItem.style.cursor = 'pointer';
+        } catch (error) {
+          console.error('[Frontend] Error parsing email complete:', error);
+        }
+      });
+
+      emailEventSource.addEventListener('done', () => {
+        emailEventSource.close();
+      });
+
+      emailEventSource.addEventListener('error', (e) => {
+        try {
+          if (e.data) {
+            const parsed = JSON.parse(e.data);
+            const data = parsed.content || parsed;
+            if (emailContent) {
+              emailContent.textContent = `Error: ${data.message || data.error || 'Failed to generate email'}`;
+              emailContent.style.color = '#c62828';
+            }
+          } else {
+            // No data means connection error (404, network issue, etc.)
+            if (emailContent) {
+              emailContent.textContent = 'Error: Failed to connect to email service. Please check if the server is running.';
+              emailContent.style.color = '#c62828';
+            }
+          }
+          perspectiveItem.classList.remove('generating-email');
+          perspectiveItem.style.cursor = 'pointer';
+          emailEventSource.close();
+        } catch (error) {
+          console.error('[Frontend] Error parsing email error:', error);
+          if (emailContent) {
+            emailContent.textContent = 'Error: Failed to generate email. Please try again.';
+            emailContent.style.color = '#c62828';
+          }
+          perspectiveItem.classList.remove('generating-email');
+          perspectiveItem.style.cursor = 'pointer';
+        }
+      });
+
+      emailEventSource.onerror = (error) => {
+        console.error('[Frontend] Email SSE connection error:', error);
+        if (emailContent) {
+          emailContent.textContent = 'Error: Connection failed. Please try again.';
+          emailContent.style.color = '#c62828';
+        }
+        perspectiveItem.classList.remove('generating-email');
+        perspectiveItem.style.cursor = 'pointer';
+        emailEventSource.close();
+      };
+    }
+
+    function copyEmailToClipboard(postId, perspectiveIndex) {
+      const emailContent = document.getElementById(`email-content-${postId}-${perspectiveIndex}`);
+      if (!emailContent) {
+        alert('Email content not found');
+        return;
+      }
+
+      const emailText = emailContent.textContent || '';
+      navigator.clipboard.writeText(emailText).then(() => {
+        alert('Email copied to clipboard!');
+      }).catch((error) => {
+        console.error('Failed to copy:', error);
+        alert('Failed to copy email. Please select and copy manually.');
+      });
+    }
+
+    function markTopicComplete(postId) {
+      const card = document.getElementById(`topic-${postId}`);
+      if (card) {
+        card.classList.add('complete');
+      }
+    }
+
+    function showError(message, postId = null) {
+      const results = document.getElementById('results');
+      
+      // If postId is provided, show error in the specific post card
+      if (postId) {
+        const card = document.getElementById(`topic-${postId}`);
+        if (card) {
+          const perspectivesContainer = document.getElementById(`perspectives-${postId}`);
+          if (perspectivesContainer) {
+            perspectivesContainer.innerHTML = `<div class="perspective-item error-perspective">❌ ${escapeHtml(message)}</div>`;
+          }
+        }
+        return;
+      }
+      
+      // Otherwise, show general error
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.innerHTML = `❌ ${escapeHtml(message)}`;
+      results.insertBefore(errorDiv, results.firstChild);
+      
+      // Auto-remove error after 10 seconds
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.remove();
+        }
+      }, 10000);
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('profileUrl').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        startGeneration();
+      }
+    });
+
+    document.getElementById('limit').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        startGeneration();
+      }
+    });
+  </script>
+</body>
+</html>
+
