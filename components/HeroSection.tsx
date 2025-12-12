@@ -72,7 +72,7 @@ export default function HeroSection({
                 : 'text-3xl md:text-4xl lg:text-5xl'
             }`}
           >
-            Ready-to-Send Sales Email
+            Ready-to-Send Email
             <br />
             <span className="text-primary">Instantly</span>
           </h2>
