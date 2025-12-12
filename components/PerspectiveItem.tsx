@@ -205,7 +205,7 @@ export default function PerspectiveItem({
         />
 
         {/* Card content - lifts on hover */}
-        <div className="relative transform group-hover:-translate-y-1 transition-transform duration-300 flex flex-col flex-1">
+        <div className="relative transform transition-transform duration-300 flex flex-col flex-1">
           {/* Title row with icon */}
           <div className="flex items-center gap-3 mb-4">
             <div
@@ -242,7 +242,7 @@ export default function PerspectiveItem({
               ) : isComplete ? (
                 <>
                   <Mail className="w-4 h-4" />
-                  View Email →
+                  Generate Email
                 </>
               ) : (
                 <>

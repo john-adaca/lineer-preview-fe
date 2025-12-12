@@ -17,15 +17,18 @@ export default function TopicCard({ postId, topicData, postIndex }: TopicCardPro
   const authorName = topicData.author?.name || 'Unknown'
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
+<div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
+
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
-        <h2 className="text-xl font-bold text-gray-900 pr-2 flex-1">
-          {topicData.topic}
-        </h2>
-        <div className="bg-primary text-white px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0">
+      <h2 className="text-xl font-bold text-gray-900 pr-2 flex-1">
+          {topicData.topic
+          ? topicData.topic.charAt(0).toUpperCase() + topicData.topic.slice(1)
+          : ""}
+          </h2>
+        {/* <div className="bg-primary text-white px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0">
           {postIndex + 1}
-        </div>
+        </div> */}
       </div>
 
       {/* Post Content */}

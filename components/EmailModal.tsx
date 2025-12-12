@@ -2,6 +2,7 @@
 
 import { X, Copy, Download, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 
 interface EmailModalProps {
   isOpen: boolean
@@ -99,7 +100,7 @@ export default function EmailModal({
 
       {/* Modal */}
       <div
-        className="relative bg-white rounded-[20px] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.15)] transform transition-all duration-300 scale-[0.96] opacity-0 animate-modal-in"
+        className="relative bg-white rounded-[20px] w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.15)] transform transition-all duration-300 scale-[0.96] opacity-0 animate-modal-in"
         onClick={(e) => e.stopPropagation()}
         style={{
           boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,106,0,0.1), 0 0 40px rgba(255,106,0,0.15)',
@@ -122,16 +123,9 @@ export default function EmailModal({
                 <Sparkles className="w-5 h-5 text-[#FF6A00]" />
               </div>
               <h2 className="text-2xl font-semibold text-gray-900">
-                Email for: {perspective}
+                {perspective}
               </h2>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-200"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
           <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
         </div>
@@ -158,27 +152,26 @@ export default function EmailModal({
               Email Body
             </label>
             <div className="relative">
-              <textarea
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                placeholder={isGenerating ? 'Generating your email...' : 'Your email content will appear here...'}
-                readOnly={isGenerating}
-                className="w-full min-h-[300px] px-6 py-5 border border-gray-200 rounded-xl text-[15px] text-gray-800 leading-relaxed resize-none transition-all duration-200 focus:outline-none focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] placeholder-gray-400"
-                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              />
-              {isGenerating && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
-                  <div className="flex items-center gap-3 text-[#FF6A00]">
-                    <span className="inline-block w-5 h-5 border-2 border-[#FF6A00]/30 rounded-full border-t-[#FF6A00] animate-spin" />
-                    <span className="text-sm font-medium">Generating your email...</span>
+              <div className="w-full min-h-[300px] px-6 py-5 border border-gray-200 rounded-xl text-[15px] text-gray-800 leading-relaxed bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-y-auto">
+                {isGenerating ? (
+                  <div className="flex items-center justify-center h-full min-h-[250px]">
+                    <div className="flex items-center gap-3 text-[#FF6A00]">
+                      <span className="inline-block w-5 h-5 border-2 border-[#FF6A00]/30 rounded-full border-t-[#FF6A00] animate-spin" />
+                      <span className="text-sm font-medium">Generating your email...</span>
+                    </div>
                   </div>
-                </div>
-              )}
-              {error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
-                  <div className="text-red-600 text-sm font-medium">{error}</div>
-                </div>
-              )}
+                ) : error ? (
+                  <div className="flex items-center justify-center h-full min-h-[250px]">
+                    <div className="text-red-600 text-sm font-medium">{error}</div>
+                  </div>
+                ) : emailBody ? (
+                  <div className="prose prose-sm max-w-none" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <ReactMarkdown>{emailBody}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="text-gray-400 italic">Your email content will appear here...</div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -231,14 +224,6 @@ export default function EmailModal({
         )}
       </div>
 
-      <style jsx>{`
-        textarea::placeholder {
-          color: #9ca3af;
-        }
-        textarea:focus::placeholder {
-          color: #d1d5db;
-        }
-      `}</style>
     </div>
   )
 }

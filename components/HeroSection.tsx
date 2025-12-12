@@ -38,16 +38,18 @@ export default function HeroSection({
     }`}>
       {/* About link */}
       <div className="absolute top-6 right-6 z-10">
-        <button 
-          className="text-gray-400 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-50"
-          aria-label="About"
-        >
-          <Info className="w-5 h-5" />
-        </button>
-      </div>
+  <button
+    onClick={() => window.open('https://www.lineer.ai/', '_blank')}
+    className="text-gray-400 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-50"
+    aria-label="About"
+  >
+    <Info className="w-5 h-5" />
+  </button>
+</div>
+
 
       {/* Content */}
-      <div className="w-full max-w-2xl mx-auto text-center">
+      <div className="w-full max-w-4xl mx-auto text-center">
         {/* Logo */}
         <div className={`flex justify-center ${isCompact ? 'mb-8' : 'mb-12'}`}>
           <Image
@@ -64,8 +66,8 @@ export default function HeroSection({
         <div className={isCompact ? 'mb-12 space-y-4' : 'mb-16 space-y-6'}>
           <h2 className={`font-bold text-gray-900 leading-tight ${
             isCompact 
-              ? 'text-3xl md:text-4xl' 
-              : 'text-5xl md:text-6xl lg:text-7xl'
+              ? 'text-1xl md:text-2xl' 
+              : 'text-3xl md:text-4xl lg:text-5xl'
           }`}>
            Ready-to-Send Sales Email
             <br />

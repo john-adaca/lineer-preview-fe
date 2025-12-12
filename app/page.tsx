@@ -38,7 +38,7 @@ export default function Home() {
 
       {/* Processing Card */}
       {status.isActive && status.progress < 100 && (
-        <div className="w-full max-w-2xl mx-auto px-4 -mt-8 pb-8">
+        <div className="w-full max-w-4xl mx-auto px-4 -mt-8 pb-8">
           <ProcessingCard
             message={status.message}
             progress={status.progress}
@@ -50,7 +50,8 @@ export default function Home() {
 
       {/* Results */}
       {hasTopics && (
-        <div className="w-full max-w-5xl mx-auto px-4 pb-12">
+    <div className="w-full max-w-6xl mx-auto px-4 pb-12">
+
           {hasError && (
             <div className="mb-8">
               <ErrorDisplay
