@@ -26,9 +26,8 @@ export default function Home() {
   const hasError = error && !dismissedErrors.has(error)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-secondary p-5">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <Header />
+    <div className="min-h-full bg-white p-8">
+      <div className="max-w-6xl mx-auto">
         <FormSection onGenerate={handleGenerate} isGenerating={isGenerating} />
         <StatusSection
           message={status.message}
@@ -36,7 +35,7 @@ export default function Home() {
           showLoading={status.showLoading}
           isActive={status.isActive}
         />
-        <div className="p-8">
+        <div className="mt-8">
           {hasError && (
             <ErrorDisplay
               message={error}

@@ -41,7 +41,7 @@ export default function FormSection({ onGenerate, isGenerating }: FormSectionPro
       <button
         onClick={handleSubmit}
         disabled={isGenerating}
-        className="bg-gradient-to-r from-primary to-secondary text-white border-none py-3.5 px-7 rounded-lg text-base font-semibold cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+        className="bg-primary text-white border-none py-3.5 px-7 rounded-lg text-base font-semibold cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
       >
         {isGenerating ? 'Generating...' : 'Generate Topics'}
       </button>

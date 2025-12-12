@@ -25,7 +25,7 @@ export default function StatusSection({
       </div>
       <div className="w-full h-2 bg-gray-200 rounded overflow-hidden mt-2.5">
         <div
-          className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"
+          className="h-full bg-primary transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>

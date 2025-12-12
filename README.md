@@ -96,3 +96,4 @@ If not set, it defaults to `http://localhost:8787`.
 - Type-safe with TypeScript
 - Modular component architecture
 
+
