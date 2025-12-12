@@ -1,20 +1,21 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LinkedIn Topics Generator - Streaming',
-  description: 'Generate topics and perspectives from LinkedIn posts with real-time streaming',
-}
+  title: 'Lineer',
+  description: 'Lineer Free application',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <main className="min-h-screen bg-white">{children}</main>
+      </body>
     </html>
-  )
+  );
 }
-

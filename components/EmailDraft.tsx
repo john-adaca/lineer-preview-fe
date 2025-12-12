@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
 interface EmailDraftProps {
-  content: string
-  isGenerating: boolean
-  error: string | null
-  onClose: () => void
-  onCopy: () => void
+  content: string;
+  isGenerating: boolean;
+  error: string | null;
+  onClose: () => void;
+  onCopy: () => void;
 }
 
 export default function EmailDraft({
@@ -46,6 +46,5 @@ export default function EmailDraft({
         </div>
       )}
     </div>
-  )
+  );
 }
-

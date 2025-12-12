@@ -13,7 +13,7 @@ A Next.js application that generates topics and perspectives from LinkedIn posts
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
@@ -51,6 +51,7 @@ If not set, it defaults to `http://localhost:8787`.
 ## Cloudflare Pages Deployment
 
 1. Build the project:
+
    ```bash
    npm run build
    ```
@@ -95,4 +96,3 @@ If not set, it defaults to `http://localhost:8787`.
 - Responsive design with Tailwind CSS
 - Type-safe with TypeScript
 - Modular component architecture
-

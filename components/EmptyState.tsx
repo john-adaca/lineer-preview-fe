@@ -10,8 +10,10 @@ export default function EmptyState() {
       >
         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
       </svg>
-      <p>Enter a LinkedIn profile URL and click &quot;Generate Topics&quot; to get started</p>
+      <p>
+        Enter a LinkedIn profile URL and click &quot;Generate Topics&quot; to
+        get started
+      </p>
     </div>
-  )
+  );
 }
-
