@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { Sparkles, Mail } from 'lucide-react'
-import type { TopicData, EmailChunkData, EmailCompleteData } from '@/types'
-import { API_BASE_URL } from '@/utils/config'
-import { useEmailStorage } from '@/hooks/useEmailStorage'
-import EmailModal from './EmailModal'
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Sparkles, Mail } from 'lucide-react';
+import type { TopicData, EmailChunkData, EmailCompleteData } from '@/types';
+import { API_BASE_URL } from '@/utils/config';
+import { useEmailStorage } from '@/hooks/useEmailStorage';
+import EmailModal from './EmailModal';
 
 interface PerspectiveItemProps {
-  postId: string
-  perspective: string
-  perspectiveIndex: number
-  topicData: TopicData
+  postId: string;
+  perspective: string;
+  perspectiveIndex: number;
+  topicData: TopicData;
 }
 
 // Orange variants for top borders
@@ -19,7 +19,7 @@ const orangeVariants = [
   '#FF6A00', // Bright orange
   '#FF8C42', // Lighter orange
   '#FFA366', // Soft orange
-]
+];
 
 export default function PerspectiveItem({
   postId,
@@ -34,157 +34,181 @@ export default function PerspectiveItem({
     setEmailContent,
     setEmailError,
     setIsGenerating,
-  } = useEmailStorage(postId, perspectiveIndex)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const emailEventSourceRef = useRef<EventSource | null>(null)
-  const hasStartedRef = useRef(false)
+  } = useEmailStorage(postId, perspectiveIndex);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const emailEventSourceRef = useRef<EventSource | null>(null);
+  const hasStartedRef = useRef(false);
 
-  const borderColor = orangeVariants[perspectiveIndex % orangeVariants.length]
+  const borderColor = orangeVariants[perspectiveIndex % orangeVariants.length];
 
   const startEmailGeneration = useCallback(() => {
-    if (hasStartedRef.current || isGeneratingEmail) return
-    hasStartedRef.current = true
+    if (hasStartedRef.current || isGeneratingEmail) return;
+    hasStartedRef.current = true;
 
-    setIsGenerating(true)
-    setEmailError(null)
-    setEmailContent('')
+    setIsGenerating(true);
+    setEmailError(null);
+    const initialMessage = topicData.topic
+      ? `Generating email for topic: ${topicData.topic}...`
+      : 'Generating email...';
+    setEmailContent(initialMessage);
 
     const params = new URLSearchParams({
       postId: postId,
       postText: topicData.postText || '',
       topic: topicData.topic || '',
       perspective: perspective,
-    })
+    });
 
     if (topicData.postUrl) {
-      params.append('postUrl', topicData.postUrl)
+      params.append('postUrl', topicData.postUrl);
     }
 
     if (topicData.author?.name) {
-      params.append('authorName', topicData.author.name)
+      params.append('authorName', topicData.author.name);
     }
 
     if (topicData.author?.url) {
-      params.append('authorUrl', topicData.author.url)
+      params.append('authorUrl', topicData.author.url);
     }
 
-    const url = `${API_BASE_URL}/api/email/draft/linkedin/stream?${params.toString()}`
-    const emailEventSource = new EventSource(url)
-    emailEventSourceRef.current = emailEventSource
+    const url = `${API_BASE_URL}/api/email/draft/linkedin/stream?${params.toString()}`;
+    const emailEventSource = new EventSource(url);
+    emailEventSourceRef.current = emailEventSource;
 
     emailEventSource.addEventListener('status', (e) => {
       try {
-        const parsed = JSON.parse(e.data)
-        const data = parsed.content || parsed
-        setEmailContent(data.message || 'Generating...')
+        const parsed = JSON.parse(e.data);
+        const data = parsed.content || parsed;
+        const statusMessage = data.message || 'Generating...';
+        const messageWithTopic = topicData.topic
+          ? `${statusMessage} (Topic: ${topicData.topic})`
+          : statusMessage;
+        setEmailContent(messageWithTopic);
       } catch (err) {
-        console.error('[Frontend] Error parsing email status:', err)
+        console.error('[Frontend] Error parsing email status:', err);
       }
-    })
+    });
 
     emailEventSource.addEventListener('email_chunk', (e) => {
       try {
-        const parsed = JSON.parse(e.data)
-        const data: EmailChunkData = parsed.content || parsed
-        setEmailContent((prev) => (prev || '') + (data.chunk || ''))
+        const parsed = JSON.parse(e.data);
+        const data: EmailChunkData = parsed.content || parsed;
+        setEmailContent((prev) => {
+          // Clear status message when first chunk arrives
+          const prevContent = prev || '';
+          const isStatusMessage = prevContent.includes('Generating') || prevContent.includes('Topic:');
+          return isStatusMessage ? (data.chunk || '') : prevContent + (data.chunk || '');
+        });
       } catch (err) {
-        console.error('[Frontend] Error parsing email chunk:', err)
+        console.error('[Frontend] Error parsing email chunk:', err);
       }
-    })
+    });
 
     emailEventSource.addEventListener('email_complete', (e) => {
       try {
-        const parsed = JSON.parse(e.data)
-        const data: EmailCompleteData = parsed.content || parsed
-        setEmailContent(data.email || '')
-        setIsGenerating(false)
-        hasStartedRef.current = false
+        const parsed = JSON.parse(e.data);
+        const data: EmailCompleteData = parsed.content || parsed;
+        setEmailContent(data.email || '');
+        setIsGenerating(false);
+        hasStartedRef.current = false;
       } catch (err) {
-        console.error('[Frontend] Error parsing email complete:', err)
-        setIsGenerating(false)
-        hasStartedRef.current = false
+        console.error('[Frontend] Error parsing email complete:', err);
+        setIsGenerating(false);
+        hasStartedRef.current = false;
       }
-    })
+    });
 
     emailEventSource.addEventListener('done', () => {
       if (emailEventSourceRef.current) {
-        emailEventSourceRef.current.close()
-        emailEventSourceRef.current = null
+        emailEventSourceRef.current.close();
+        emailEventSourceRef.current = null;
       }
-      hasStartedRef.current = false
-    })
+      hasStartedRef.current = false;
+    });
 
-    emailEventSource.addEventListener('error', (e) => {
+    emailEventSource.addEventListener('error', (e: MessageEvent | Event) => {
       try {
-        if (e.data) {
-          const parsed = JSON.parse(e.data)
-          const data = parsed.content || parsed
-          setEmailError(data.message || data.error || 'Failed to generate email')
+        if ('data' in e && e.data) {
+          const parsed = JSON.parse(e.data);
+          const data = parsed.content || parsed;
+          setEmailError(
+            data.message || data.error || 'Failed to generate email'
+          );
         } else {
-          setEmailError('Failed to connect to email service. Please check if the server is running.')
+          setEmailError(
+            'Failed to connect to email service. Please check if the server is running.'
+          );
         }
-        setIsGenerating(false)
-        hasStartedRef.current = false
+        setIsGenerating(false);
+        hasStartedRef.current = false;
         if (emailEventSourceRef.current) {
-          emailEventSourceRef.current.close()
-          emailEventSourceRef.current = null
+          emailEventSourceRef.current.close();
+          emailEventSourceRef.current = null;
         }
       } catch (err) {
-        console.error('[Frontend] Error parsing email error:', err)
-        setEmailError('Failed to generate email. Please try again.')
-        setIsGenerating(false)
-        hasStartedRef.current = false
+        console.error('[Frontend] Error parsing email error:', err);
+        setEmailError('Failed to generate email. Please try again.');
+        setIsGenerating(false);
+        hasStartedRef.current = false;
       }
-    })
+    });
 
     emailEventSource.onerror = () => {
-      console.error('[Frontend] Email SSE connection error')
-      setEmailError('Connection failed. Please try again.')
-      setIsGenerating(false)
-      hasStartedRef.current = false
+      console.error('[Frontend] Email SSE connection error');
+      setEmailError('Connection failed. Please try again.');
+      setIsGenerating(false);
+      hasStartedRef.current = false;
       if (emailEventSourceRef.current) {
-        emailEventSourceRef.current.close()
-        emailEventSourceRef.current = null
+        emailEventSourceRef.current.close();
+        emailEventSourceRef.current = null;
       }
-    }
-  }, [postId, perspective, topicData, setEmailContent, setEmailError, setIsGenerating, isGeneratingEmail])
+    };
+  }, [
+    postId,
+    perspective,
+    topicData,
+    setEmailContent,
+    setEmailError,
+    setIsGenerating,
+    isGeneratingEmail,
+  ]);
 
   const handleClick = useCallback(() => {
-    setIsModalOpen(true)
+    setIsModalOpen(true);
 
     if (emailContent !== null) {
-      return
+      return;
     }
 
-    if (isGeneratingEmail) return
+    if (isGeneratingEmail) return;
 
-    startEmailGeneration()
-  }, [emailContent, isGeneratingEmail, startEmailGeneration])
+    startEmailGeneration();
+  }, [emailContent, isGeneratingEmail, startEmailGeneration]);
 
   const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false)
-  }, [])
+    setIsModalOpen(false);
+  }, []);
 
   const handleCopy = useCallback(() => {
     if (emailContent) {
       navigator.clipboard.writeText(emailContent).catch((err) => {
-        console.error('Failed to copy:', err)
-        alert('Failed to copy email. Please select and copy manually.')
-      })
+        console.error('Failed to copy:', err);
+        alert('Failed to copy email. Please select and copy manually.');
+      });
     }
-  }, [emailContent])
+  }, [emailContent]);
 
   useEffect(() => {
     return () => {
       if (emailEventSourceRef.current) {
-        emailEventSourceRef.current.close()
-        emailEventSourceRef.current = null
+        emailEventSourceRef.current.close();
+        emailEventSourceRef.current = null;
       }
-      hasStartedRef.current = false
-    }
-  }, [])
+      hasStartedRef.current = false;
+    };
+  }, []);
 
-  const isComplete = emailContent !== null && !isGeneratingEmail
+  const isComplete = emailContent !== null && !isGeneratingEmail;
 
   return (
     <>
@@ -230,8 +254,8 @@ export default function PerspectiveItem({
               className="w-full bg-[#FF6A00] text-white py-3 px-4 rounded-lg font-medium text-sm transition-all duration-300 hover:shadow-lg hover:shadow-[#FF6A00]/30 hover:bg-gradient-to-r hover:from-[#FF6A00] hover:to-[#FF8C42] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               disabled={isGeneratingEmail}
               onClick={(e) => {
-                e.stopPropagation()
-                handleClick()
+                e.stopPropagation();
+                handleClick();
               }}
             >
               {isGeneratingEmail ? (
@@ -264,8 +288,9 @@ export default function PerspectiveItem({
         isGenerating={isGeneratingEmail}
         error={emailError}
         perspective={perspective}
+        topic={topicData.topic}
         onCopy={handleCopy}
       />
     </>
-  )
+  );
 }

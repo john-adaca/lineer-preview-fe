@@ -1,17 +1,18 @@
-'use client'
+'use client';
 
-import { X, Copy, Download, Sparkles } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
+import { X, Copy, Download, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface EmailModalProps {
-  isOpen: boolean
-  onClose: () => void
-  content: string
-  isGenerating: boolean
-  error: string | null
-  onCopy: () => void
-  perspective: string
+  isOpen: boolean;
+  onClose: () => void;
+  content: string;
+  isGenerating: boolean;
+  error: string | null;
+  onCopy: () => void;
+  perspective: string;
+  topic: string;
 }
 
 export default function EmailModal({
@@ -22,52 +23,63 @@ export default function EmailModal({
   error,
   onCopy,
   perspective,
+  topic,
 }: EmailModalProps) {
-  const [subject, setSubject] = useState('')
-  const [emailBody, setEmailBody] = useState('')
-  const [showSparkles, setShowSparkles] = useState(false)
+  const [subject, setSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [showSparkles, setShowSparkles] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      setShowSparkles(true)
+      document.body.style.overflow = 'hidden';
+      setShowSparkles(true);
       // Extract subject from email if it exists
       if (content && content.includes('Subject:')) {
-        const subjectMatch = content.match(/Subject:\s*(.+)/i)
+        const subjectMatch = content.match(/Subject:\s*(.+)/i);
         if (subjectMatch) {
-          setSubject(subjectMatch[1].trim())
-          setEmailBody(content.replace(/Subject:.*/i, '').trim())
+          setSubject(subjectMatch[1].trim());
+          setEmailBody(content.replace(/Subject:.*/i, '').trim());
         } else {
-          setEmailBody(content)
+          setEmailBody(content);
+          // Set topic as default subject if no subject found in content
+          if (topic) {
+            setSubject(topic);
+          }
         }
       } else {
-        setEmailBody(content)
+        setEmailBody(content);
+        // Set topic as default subject when modal opens
+        if (topic) {
+          setSubject(topic);
+        }
       }
     } else {
-      document.body.style.overflow = 'unset'
-      setShowSparkles(false)
+      document.body.style.overflow = 'unset';
+      setShowSparkles(false);
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen, content])
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, content, topic]);
 
   const handleDownload = () => {
-    const fullEmail = subject ? `Subject: ${subject}\n\n${emailBody}` : emailBody
-    const blob = new Blob([fullEmail], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `email-${Date.now()}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+    const fullEmail = subject
+      ? `Subject: ${subject}\n\n${emailBody}`
+      : emailBody;
+    const blob = new Blob([fullEmail], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `email-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  const fullEmail = subject ? `Subject: ${subject}\n\n${emailBody}` : emailBody
+  const fullEmail = subject ? `Subject: ${subject}\n\n${emailBody}` : emailBody;
 
   return (
     <div
@@ -75,7 +87,7 @@ export default function EmailModal({
       onClick={onClose}
     >
       {/* Blurred Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/40 backdrop-blur-[25px] transition-opacity duration-300"
         style={{ backdropFilter: 'blur(25px)' }}
       />
@@ -103,14 +115,16 @@ export default function EmailModal({
         className="relative bg-white rounded-[20px] w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.15)] transform transition-all duration-300 scale-[0.96] opacity-0 animate-modal-in"
         onClick={(e) => e.stopPropagation()}
         style={{
-          boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,106,0,0.1), 0 0 40px rgba(255,106,0,0.15)',
+          boxShadow:
+            '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,106,0,0.1), 0 0 40px rgba(255,106,0,0.15)',
         }}
       >
         {/* Orange Glow Border Effect */}
         <div
           className="absolute -inset-[2px] rounded-[22px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,106,0,0.3), rgba(255,140,66,0.2))',
+            background:
+              'linear-gradient(135deg, rgba(255,106,0,0.3), rgba(255,140,66,0.2))',
             filter: 'blur(8px)',
           }}
         />
@@ -157,19 +171,28 @@ export default function EmailModal({
                   <div className="flex items-center justify-center h-full min-h-[250px]">
                     <div className="flex items-center gap-3 text-[#FF6A00]">
                       <span className="inline-block w-5 h-5 border-2 border-[#FF6A00]/30 rounded-full border-t-[#FF6A00] animate-spin" />
-                      <span className="text-sm font-medium">Generating your email...</span>
+                      <span className="text-sm font-medium">
+                        Generating your email...
+                      </span>
                     </div>
                   </div>
                 ) : error ? (
                   <div className="flex items-center justify-center h-full min-h-[250px]">
-                    <div className="text-red-600 text-sm font-medium">{error}</div>
+                    <div className="text-red-600 text-sm font-medium">
+                      {error}
+                    </div>
                   </div>
                 ) : emailBody ? (
-                  <div className="prose prose-sm max-w-none" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <div
+                    className="prose prose-sm max-w-none"
+                    style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                  >
                     <ReactMarkdown>{emailBody}</ReactMarkdown>
                   </div>
                 ) : (
-                  <div className="text-gray-400 italic">Your email content will appear here...</div>
+                  <div className="text-gray-400 italic">
+                    Your email content will appear here...
+                  </div>
                 )}
               </div>
             </div>
@@ -183,13 +206,18 @@ export default function EmailModal({
               {/* Copy Button - Primary */}
               <button
                 onClick={() => {
-                  const textToCopy = fullEmail
-                  navigator.clipboard.writeText(textToCopy).then(() => {
-                    onCopy()
-                  }).catch((err) => {
-                    console.error('Failed to copy:', err)
-                    alert('Failed to copy email. Please select and copy manually.')
-                  })
+                  const textToCopy = fullEmail;
+                  navigator.clipboard
+                    .writeText(textToCopy)
+                    .then(() => {
+                      onCopy();
+                    })
+                    .catch((err) => {
+                      console.error('Failed to copy:', err);
+                      alert(
+                        'Failed to copy email. Please select and copy manually.'
+                      );
+                    });
                 }}
                 className="px-6 py-3 bg-[#FF6A00] text-white rounded-full font-medium text-sm transition-all duration-300 hover:shadow-lg hover:shadow-[#FF6A00]/30 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-[#FF6A00] hover:to-[#FF8C42] relative overflow-hidden group"
               >
@@ -223,7 +251,6 @@ export default function EmailModal({
           </div>
         )}
       </div>
-
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
 interface StatusSectionProps {
-  message: string
-  progress: number
-  showLoading: boolean
-  isActive: boolean
+  message: string;
+  progress: number;
+  showLoading: boolean;
+  isActive: boolean;
 }
 
 export default function StatusSection({
@@ -13,7 +13,7 @@ export default function StatusSection({
   showLoading,
   isActive,
 }: StatusSectionProps) {
-  if (!isActive) return null
+  if (!isActive) return null;
 
   return (
     <div className="py-5 px-8 bg-gray-100 border-b border-gray-200">
@@ -30,6 +30,5 @@ export default function StatusSection({
         />
       </div>
     </div>
-  )
+  );
 }
-

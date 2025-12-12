@@ -1,52 +1,53 @@
-'use client'
+'use client';
 
-import { useState, KeyboardEvent } from 'react'
-import Image from 'next/image'
-import { Info } from 'lucide-react'
+import { useState, KeyboardEvent } from 'react';
+import Image from 'next/image';
+import { Info } from 'lucide-react';
 
 interface HeroSectionProps {
-  onGenerate: (profileUrl: string, limit: number) => void
-  isGenerating: boolean
-  hasResults?: boolean
+  onGenerate: (profileUrl: string, limit: number) => void;
+  isGenerating: boolean;
+  hasResults?: boolean;
 }
 
-export default function HeroSection({ 
-  onGenerate, 
-  isGenerating, 
-  hasResults = false 
+export default function HeroSection({
+  onGenerate,
+  isGenerating,
+  hasResults = false,
 }: HeroSectionProps) {
-  const [profileUrl, setProfileUrl] = useState('')
-  const [limit] = useState(1)
+  const [profileUrl, setProfileUrl] = useState('');
+  const [limit] = useState(1);
 
   const handleSubmit = () => {
     if (profileUrl.trim()) {
-      onGenerate(profileUrl, limit)
+      onGenerate(profileUrl, limit);
     }
-  }
+  };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSubmit()
+      handleSubmit();
     }
-  }
+  };
 
-  const isCompact = isGenerating || hasResults
+  const isCompact = isGenerating || hasResults;
 
   return (
-    <div className={`relative flex flex-col items-center justify-center px-4 ${
-      isCompact ? 'py-12' : 'min-h-screen py-12'
-    }`}>
+    <div
+      className={`relative flex flex-col items-center justify-center px-4 ${
+        isCompact ? 'py-12' : 'min-h-screen py-12'
+      }`}
+    >
       {/* About link */}
       <div className="absolute top-6 right-6 z-10">
-  <button
-    onClick={() => window.open('https://www.lineer.ai/', '_blank')}
-    className="text-gray-400 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-50"
-    aria-label="About"
-  >
-    <Info className="w-5 h-5" />
-  </button>
-</div>
-
+        <button
+          onClick={() => window.open('https://www.lineer.ai/', '_blank')}
+          className="text-gray-400 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-50"
+          aria-label="About"
+        >
+          <Info className="w-5 h-5" />
+        </button>
+      </div>
 
       {/* Content */}
       <div className="w-full max-w-4xl mx-auto text-center">
@@ -64,19 +65,24 @@ export default function HeroSection({
 
         {/* Headline */}
         <div className={isCompact ? 'mb-12 space-y-4' : 'mb-16 space-y-6'}>
-          <h2 className={`font-bold text-gray-900 leading-tight ${
-            isCompact 
-              ? 'text-1xl md:text-2xl' 
-              : 'text-3xl md:text-4xl lg:text-5xl'
-          }`}>
-           Ready-to-Send Sales Email
+          <h2
+            className={`font-bold text-gray-900 leading-tight ${
+              isCompact
+                ? 'text-1xl md:text-2xl'
+                : 'text-3xl md:text-4xl lg:text-5xl'
+            }`}
+          >
+            Ready-to-Send Sales Email
             <br />
             <span className="text-primary">Instantly</span>
           </h2>
-          <p className={`text-gray-500 max-w-xl mx-auto ${
-            isCompact ? 'text-base' : 'text-xl'
-          }`}>
-            Enter a LinkedIn profile URL to discover engaging topics and perspectives
+          <p
+            className={`text-gray-500 max-w-xl mx-auto ${
+              isCompact ? 'text-base' : 'text-xl'
+            }`}
+          >
+            Enter a LinkedIn profile URL to discover engaging topics and
+            perspectives
           </p>
         </div>
 
@@ -101,5 +107,5 @@ export default function HeroSection({
         </div>
       </div>
     </div>
-  )
+  );
 }

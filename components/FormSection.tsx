@@ -1,30 +1,36 @@
-'use client'
+'use client';
 
-import { useState, KeyboardEvent } from 'react'
+import { useState, KeyboardEvent } from 'react';
 
 interface FormSectionProps {
-  onGenerate: (profileUrl: string, limit: number) => void
-  isGenerating: boolean
+  onGenerate: (profileUrl: string, limit: number) => void;
+  isGenerating: boolean;
 }
 
-export default function FormSection({ onGenerate, isGenerating }: FormSectionProps) {
-  const [profileUrl, setProfileUrl] = useState('')
-  const [limit] = useState(1)
+export default function FormSection({
+  onGenerate,
+  isGenerating,
+}: FormSectionProps) {
+  const [profileUrl, setProfileUrl] = useState('');
+  const [limit] = useState(1);
 
   const handleSubmit = () => {
-    onGenerate(profileUrl, limit)
-  }
+    onGenerate(profileUrl, limit);
+  };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSubmit()
+      handleSubmit();
     }
-  }
+  };
 
   return (
     <div className="p-8 border-b border-gray-200">
       <div className="mb-5">
-        <label htmlFor="profileUrl" className="block mb-2 font-semibold text-gray-800">
+        <label
+          htmlFor="profileUrl"
+          className="block mb-2 font-semibold text-gray-800"
+        >
           LinkedIn Profile URL
         </label>
         <input
@@ -46,6 +52,5 @@ export default function FormSection({ onGenerate, isGenerating }: FormSectionPro
         {isGenerating ? 'Generating...' : 'Generate Topics'}
       </button>
     </div>
-  )
+  );
 }
-

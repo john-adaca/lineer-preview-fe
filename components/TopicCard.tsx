@@ -1,31 +1,34 @@
-'use client'
+'use client';
 
-import type { TopicData } from '@/types'
-import PerspectiveItem from './PerspectiveItem'
+import { TopicData } from '@/types';
+import PerspectiveItem from './PerspectiveItem';
 
 interface TopicCardProps {
-  postId: string
-  topicData: TopicData
-  postIndex: number
+  postId: string;
+  topicData: TopicData;
+  postIndex: number;
 }
 
-export default function TopicCard({ postId, topicData, postIndex }: TopicCardProps) {
+export default function TopicCard({
+  postId,
+  topicData,
+  postIndex,
+}: TopicCardProps) {
   const displayText =
     topicData.postText && topicData.postText.length > 300
       ? `${topicData.postText.substring(0, 300)}...`
-      : topicData.postText || 'Loading post content...'
-  const authorName = topicData.author?.name || 'Unknown'
+      : topicData.postText || 'Loading post content...';
+  const authorName = topicData.author?.name || 'Unknown';
 
   return (
-<div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
-
+    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
-      <h2 className="text-xl font-bold text-gray-900 pr-2 flex-1">
+        <h2 className="text-xl font-bold text-gray-900 pr-2 flex-1">
           {topicData.topic
-          ? topicData.topic.charAt(0).toUpperCase() + topicData.topic.slice(1)
-          : ""}
-          </h2>
+            ? topicData.topic.charAt(0).toUpperCase() + topicData.topic.slice(1)
+            : ''}
+        </h2>
         {/* <div className="bg-primary text-white px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0">
           {postIndex + 1}
         </div> */}
@@ -64,7 +67,7 @@ export default function TopicCard({ postId, topicData, postIndex }: TopicCardPro
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {topicData.perspectives.map((perspective, index) => (
+            {topicData.perspectives.map((perspective: any, index: any) => (
               <PerspectiveItem
                 key={`${postId}-${index}`}
                 postId={postId}
@@ -77,5 +80,5 @@ export default function TopicCard({ postId, topicData, postIndex }: TopicCardPro
         )}
       </div>
     </div>
-  )
+  );
 }

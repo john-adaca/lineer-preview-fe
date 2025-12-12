@@ -1,11 +1,10 @@
-'use client'
+'use client';
 
-import { usePathname } from 'next/navigation'
-import { Bell, Settings, Search, ArrowLeft } from 'lucide-react'
+import { usePathname } from 'next/navigation';
+import { Bell, Settings, Search, ArrowLeft } from 'lucide-react';
 
 const getPageTitle = (pathname: string): string => {
   const titles: Record<string, string> = {
-
     '/': 'Home',
     '/contacts': 'Contacts',
     '/companies': 'Companies',
@@ -13,13 +12,13 @@ const getPageTitle = (pathname: string): string => {
     '/campaigns': 'Campaigns',
     '/tasks': 'Tasks',
     '/inbox': 'Inbox',
-  }
-  return titles[pathname] || 'Home'
-}
+  };
+  return titles[pathname] || 'Home';
+};
 
 export default function Header() {
-  const pathname = usePathname()
-  const pageTitle = getPageTitle(pathname)
+  const pathname = usePathname();
+  const pageTitle = getPageTitle(pathname);
 
   return (
     <div className="fixed top-0 left-64 right-0 h-16 bg-white flex items-center justify-between px-6 border-b border-gray-200 z-10">
@@ -51,6 +50,5 @@ export default function Header() {
         </button>
       </div>
     </div>
-  )
+  );
 }
-

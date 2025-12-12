@@ -69,6 +69,10 @@
   }
 }
 
+.animate-slide-in {
+  animation: fadeInSlide 0.3s ease-out;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
