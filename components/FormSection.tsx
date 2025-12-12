@@ -8,7 +8,7 @@ interface FormSectionProps {
 }
 
 export default function FormSection({ onGenerate, isGenerating }: FormSectionProps) {
-  const [profileUrl, setProfileUrl] = useState('https://www.linkedin.com/in/lambrosphotios')
+  const [profileUrl, setProfileUrl] = useState('')
   const [limit] = useState(1)
 
   const handleSubmit = () => {

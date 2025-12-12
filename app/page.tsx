@@ -1,63 +1,75 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useSSE } from '@/hooks/useSSE'
-import Header from '@/components/Header'
-import FormSection from '@/components/FormSection'
-import StatusSection from '@/components/StatusSection'
+import HeroSection from '@/components/HeroSection'
+import ProcessingCard from '@/components/ProcessingCard'
 import TopicCard from '@/components/TopicCard'
 import ErrorDisplay from '@/components/ErrorDisplay'
-import EmptyState from '@/components/EmptyState'
 
 export default function Home() {
   const { topics, status, isGenerating, error, startGeneration, reset } = useSSE()
   const [dismissedErrors, setDismissedErrors] = useState<Set<string>>(new Set())
 
-  const handleGenerate = (profileUrl: string, limit: number) => {
+  const handleGenerate = useCallback((profileUrl: string, limit: number) => {
     reset()
     startGeneration(profileUrl, limit)
-  }
+  }, [reset, startGeneration])
 
-  const handleDismissError = () => {
+  const handleDismissError = useCallback(() => {
     setDismissedErrors(new Set())
-  }
+  }, [])
 
-  const topicEntries = Object.entries(topics)
-  const hasError = error && !dismissedErrors.has(error)
+  const topicEntries = useMemo(() => Object.entries(topics), [topics])
+  const hasError = useMemo(
+    () => error && !dismissedErrors.has(error),
+    [error, dismissedErrors]
+  )
+  const hasTopics = topicEntries.length > 0
 
   return (
-    <div className="min-h-full bg-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <FormSection onGenerate={handleGenerate} isGenerating={isGenerating} />
-        <StatusSection
-          message={status.message}
-          progress={status.progress}
-          showLoading={status.showLoading}
-          isActive={status.isActive}
-        />
-        <div className="mt-8">
-          {hasError && (
-            <ErrorDisplay
-              message={error}
-              onDismiss={handleDismissError}
-              autoDismiss={true}
-            />
-          )}
-          {topicEntries.length === 0 ? (
-            <EmptyState />
-          ) : (
-            topicEntries.map(([postId, topicData], index) => (
-              <TopicCard
-                key={postId}
-                postId={postId}
-                topicData={topicData}
-                postIndex={index}
-              />
-            ))
-          )}
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <HeroSection 
+        onGenerate={handleGenerate} 
+        isGenerating={isGenerating}
+        hasResults={hasTopics}
+      />
+
+      {/* Processing Card */}
+      {status.isActive && status.progress < 100 && (
+        <div className="w-full max-w-2xl mx-auto px-4 -mt-8 pb-8">
+          <ProcessingCard
+            message={status.message}
+            progress={status.progress}
+            showLoading={status.showLoading}
+            isActive={status.isActive}
+          />
         </div>
-      </div>
+      )}
+
+      {/* Results */}
+      {hasTopics && (
+        <div className="w-full max-w-5xl mx-auto px-4 pb-12">
+          {hasError && (
+            <div className="mb-8">
+              <ErrorDisplay
+                message={error}
+                onDismiss={handleDismissError}
+                autoDismiss={true}
+              />
+            </div>
+          )}
+          {topicEntries.map(([postId, topicData], index) => (
+            <TopicCard
+              key={postId}
+              postId={postId}
+              topicData={topicData}
+              postIndex={index}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
-
